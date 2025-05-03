@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import {useOrderStore} from '../../store/orders/useOrdersStore';
 import DashboardTile from './dashboardTile/DashboardTile';
@@ -14,6 +15,7 @@ import VendorWiseOrders from '../../screens/Dashboard/screens/VendorWiseOrders';
 import {useNavigation} from '@react-navigation/native';
 import {OrderStackParamList} from '../../navigation/DashboardNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {useCampuses} from '../../hooks/campuses/useCampuses';
 
 type OrderListScreenNavigationProp = StackNavigationProp<
   OrderStackParamList,
@@ -30,6 +32,7 @@ const OrderListScreen = () => {
     getPendingOrderCount,
     getAcceptedOrderCount,
     getReadyToShipOrderCount,
+    getOrderCount,
   } = useOrderStore();
 
   useEffect(() => {
@@ -39,6 +42,7 @@ const OrderListScreen = () => {
   const onRefresh = () => {
     fetchOrders();
   };
+  const {selectedCampus} = useCampuses();
 
   if (loading) {
     return (
@@ -58,6 +62,23 @@ const OrderListScreen = () => {
       </View>
     );
   }
+
+  // Empty state when no campus is selected
+  if (!selectedCampus) {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <Image
+          source={require('../../assets/images/task-list.png')} // Add an appropriate image
+          style={styles.emptyStateImage}
+        />
+        <Text style={styles.emptyStateTitle}>No Campus Selected</Text>
+        <Text style={styles.emptyStateText}>
+          Please select a campus to view order summary
+        </Text>
+      </View>
+    );
+  }
+
   if (orders.length === 0 && !loading) {
     return (
       <View style={[styles.centered, {flex: 1}]}>
@@ -104,9 +125,32 @@ const OrderListScreen = () => {
               navigation.navigate('VendorOrders', {tab: 'ReadyToShip'})
             }
           />
+          <DashboardTile
+            size="m"
+            label="Completed"
+            value={getReadyToShipOrderCount()}
+            color="#D7DCF8"
+            onPress={() =>
+              navigation.navigate('VendorOrders', {tab: 'ReadyToShip'})
+            }
+          />
+          <DashboardTile
+            size="m"
+            label="Cancelled/Rejected"
+            value={getReadyToShipOrderCount()}
+            color="#D4E2EA"
+            onPress={() =>
+              navigation.navigate('VendorOrders', {tab: 'Cancelled'})
+            }
+          />
+          <DashboardTile
+            size="l"
+            label="Total Orders"
+            value={getOrderCount()}
+            color="#A3D8F0"
+          />
         </View>
       </ScrollView>
-      {/* <VendorWiseOrders tab={'Accepted'} /> */}
     </>
   );
 };
@@ -119,7 +163,7 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
@@ -136,14 +180,30 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  section: {
-    marginBottom: 20,
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
   },
-  sectionTitle: {
-    fontSize: 18,
+  emptyStateImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  emptyStateTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#F6285F',
+    color: '#333',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });
 

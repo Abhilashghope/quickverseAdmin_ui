@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ScrollView, Text} from 'react-native';
+import {Image, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 import {Vendor} from '../../../store/vendors/useVendorStore';
 import {useOrderStore} from '../../../store/orders/useOrdersStore';
@@ -38,7 +38,16 @@ const PendingTab: React.FC<PendingTabProps> = ({vendors}) => {
   return (
     <ScrollView style={{marginHorizontal: 16}}>
       {vendorsWithPendingOrders?.length === 0 ? (
-        <Text>No vendors with pending orders</Text>
+        <View style={[styles.stateContainer, styles.emptyContainer]}>
+          <Image
+            source={require('../../../assets/images/empty-state.png')} // Add your empty state icon
+            style={styles.stateIcon}
+          />
+          <Text style={styles.stateTitle}>0 Pending Orders</Text>
+          <Text style={styles.stateSubtitle}>
+            There are currently no pending Orders at this campus
+          </Text>
+        </View>
       ) : (
         vendorsWithPendingOrders.map(vendor => (
           <CollapsableVendor
@@ -46,7 +55,7 @@ const PendingTab: React.FC<PendingTabProps> = ({vendors}) => {
             vendorName={vendor.vendorName}
             vendorLogoUrl="https://example.com/logo.png"
             status="pending"
-            onCallPress={() => console.log('Calling vendor...')}>
+            vendorPhone={vendor.vendorPhone}>
             <OrderCardList
               key={`pending_orders_${vendor.vendorId}`}
               vendorId={vendor.vendorId}
@@ -60,3 +69,41 @@ const PendingTab: React.FC<PendingTabProps> = ({vendors}) => {
 };
 
 export default PendingTab;
+
+const styles = StyleSheet.create({
+  stateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  loadingContainer: {
+    backgroundColor: '#fafafa',
+  },
+  errorContainer: {
+    backgroundColor: '#fff9f9',
+  },
+  emptyContainer: {
+    backgroundColor: '#f9f9f9',
+  },
+  stateIcon: {
+    width: 120,
+    height: 120,
+    marginBottom: 24,
+    tintColor: '#d1d1d1',
+  },
+  stateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  stateSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+});

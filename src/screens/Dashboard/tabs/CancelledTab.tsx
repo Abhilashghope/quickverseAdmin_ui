@@ -1,61 +1,67 @@
 import React, {useEffect, useState} from 'react';
-import {Image, ScrollView, StyleSheet, Text, View} from 'react-native';
-import CollapsableVendor from '../../../components/Dashboard/pending/CollapsableVendor';
+import {ScrollView, View, Text, StyleSheet, Image} from 'react-native';
 import {useOrderStore} from '../../../store/orders/useOrdersStore';
 import {Vendor} from '../../../store/vendors/useVendorStore';
+import CollapsableVendor from '../../../components/Dashboard/pending/CollapsableVendor';
 import OrderCardList from '../screens/OrderCardList';
 
-interface ReadyToShipTabProps {
+interface cancelledTabProps {
   vendors: Vendor[];
 }
-const ReadyToShipTab: React.FC<ReadyToShipTabProps> = ({vendors}) => {
+const CancelledTab: React.FC<cancelledTabProps> = ({vendors}) => {
   const {getVendorOrdersByStatus} = useOrderStore();
-  const [vendorsWithreadyToShipOrders, setVendorsWithReadyToShipOrders] =
-    useState<Vendor[]>([]);
-  console.log('ReadyToShipTab vendors:', vendors);
+  const [vendorsWithCancelledOrders, setVendorsWithCancelledOrders] = useState<
+    Vendor[]
+  >([]);
+
   useEffect(() => {
-    const fetchReadyToShipVendors = () => {
-      const readyToShipVendors: Vendor[] = vendors.filter(vendor => {
+    const fetchCancelledVendors = () => {
+      const cancelledVendors: Vendor[] = vendors.filter(vendor => {
         // ⚡ vendor.vendorId is string, shopId is number — need to convert
-        const readyToShipOrders = getVendorOrdersByStatus(
+        const rejectedOrders = getVendorOrdersByStatus(
           Number(vendor.vendorId),
-          'READY_TO_SHIP',
+          'REJECTED',
         );
-        return readyToShipOrders?.length > 0;
+        const cancelledOrders = getVendorOrdersByStatus(
+          Number(vendor.vendorId),
+          'CANCELLED',
+        );
+
+        return cancelledOrders?.length > 0 || rejectedOrders?.length > 0;
       });
 
-      setVendorsWithReadyToShipOrders(readyToShipVendors);
+      setVendorsWithCancelledOrders(cancelledVendors);
     };
 
     if (vendors?.length > 0) {
-      fetchReadyToShipVendors();
+      fetchCancelledVendors();
     }
-  }, [vendors, getVendorOrdersByStatus]);
+  }, [getVendorOrdersByStatus, vendors]);
   return (
     <ScrollView style={{marginHorizontal: 16}}>
-      {vendorsWithreadyToShipOrders?.length === 0 ? (
+      {vendorsWithCancelledOrders?.length === 0 ? (
         <View style={[styles.stateContainer, styles.emptyContainer]}>
           <Image
             source={require('../../../assets/images/empty-state.png')} // Add your empty state icon
             style={styles.stateIcon}
           />
-          <Text style={styles.stateTitle}>0 Ready To Ship Orders</Text>
+          <Text style={styles.stateTitle}>0 Cancelled/Rejected Available</Text>
           <Text style={styles.stateSubtitle}>
-            There are currently no Ready-To-Ship orders at this campus
+            There are currently no Cancelled/Rejected Orders at this campus
           </Text>
         </View>
       ) : (
-        vendorsWithreadyToShipOrders.map(vendor => (
+        vendorsWithCancelledOrders.map(vendor => (
           <CollapsableVendor
-            key={`readytoship_${vendor.vendorId}`}
+            key={`cancelled_${vendor.vendorId}`}
             vendorName={vendor.vendorName}
             vendorLogoUrl="https://example.com/logo.png"
-            status="ready to ship"
+            status="cancelled"
             vendorPhone={vendor.vendorPhone}>
             <OrderCardList
-              key={`readyToShip_orders_${vendor.vendorId}`}
+              key={`cancelled_orders_${vendor.vendorId}`}
               vendorId={vendor.vendorId}
-              status="READY_TO_SHIP"
+              status="CANCELLED"
             />
           </CollapsableVendor>
         ))
@@ -64,7 +70,7 @@ const ReadyToShipTab: React.FC<ReadyToShipTabProps> = ({vendors}) => {
   );
 };
 
-export default ReadyToShipTab;
+export default CancelledTab;
 
 const styles = StyleSheet.create({
   stateContainer: {

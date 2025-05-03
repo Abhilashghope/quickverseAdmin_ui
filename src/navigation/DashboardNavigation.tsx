@@ -5,7 +5,9 @@ import OrderListScreen from '../components/Dashboard/OrderDashboard';
 
 export type OrderStackParamList = {
   OrderList: undefined;
-  VendorOrders: {tab: 'Pending' | 'Accepted' | 'ReadyToShip'};
+  VendorOrders: {
+    tab: 'Pending' | 'Accepted' | 'ReadyToShip' | 'Cancelled' | 'Completed';
+  };
 };
 
 const Stack = createStackNavigator();

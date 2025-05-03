@@ -1,61 +1,62 @@
 import React, {useEffect, useState} from 'react';
 import {Image, ScrollView, StyleSheet, Text, View} from 'react-native';
-import CollapsableVendor from '../../../components/Dashboard/pending/CollapsableVendor';
 import {useOrderStore} from '../../../store/orders/useOrdersStore';
 import {Vendor} from '../../../store/vendors/useVendorStore';
+import CollapsableVendor from '../../../components/Dashboard/pending/CollapsableVendor';
 import OrderCardList from '../screens/OrderCardList';
 
-interface ReadyToShipTabProps {
+interface completedTabProps {
   vendors: Vendor[];
 }
-const ReadyToShipTab: React.FC<ReadyToShipTabProps> = ({vendors}) => {
+const CompletedTab: React.FC<completedTabProps> = ({vendors}) => {
   const {getVendorOrdersByStatus} = useOrderStore();
-  const [vendorsWithreadyToShipOrders, setVendorsWithReadyToShipOrders] =
-    useState<Vendor[]>([]);
-  console.log('ReadyToShipTab vendors:', vendors);
+  const [vendorsWithCompletedOrders, setVendorsWithCompletedOrders] = useState<
+    Vendor[]
+  >([]);
+  console.log('CompletedTab vendors:', vendors);
   useEffect(() => {
-    const fetchReadyToShipVendors = () => {
-      const readyToShipVendors: Vendor[] = vendors.filter(vendor => {
+    const fetchCompletedVendors = () => {
+      const completedVendors: Vendor[] = vendors.filter(vendor => {
         // ⚡ vendor.vendorId is string, shopId is number — need to convert
-        const readyToShipOrders = getVendorOrdersByStatus(
+        const completedOrders = getVendorOrdersByStatus(
           Number(vendor.vendorId),
-          'READY_TO_SHIP',
+          'COMPLETED',
         );
-        return readyToShipOrders?.length > 0;
+        return completedOrders?.length > 0;
       });
-
-      setVendorsWithReadyToShipOrders(readyToShipVendors);
+      console.log('Completed vendors:', completedVendors);
+      setVendorsWithCompletedOrders(completedVendors);
     };
 
     if (vendors?.length > 0) {
-      fetchReadyToShipVendors();
+      fetchCompletedVendors();
     }
-  }, [vendors, getVendorOrdersByStatus]);
+  }, [getVendorOrdersByStatus, vendors]);
   return (
     <ScrollView style={{marginHorizontal: 16}}>
-      {vendorsWithreadyToShipOrders?.length === 0 ? (
+      {vendorsWithCompletedOrders?.length === 0 ? (
         <View style={[styles.stateContainer, styles.emptyContainer]}>
           <Image
             source={require('../../../assets/images/empty-state.png')} // Add your empty state icon
             style={styles.stateIcon}
           />
-          <Text style={styles.stateTitle}>0 Ready To Ship Orders</Text>
+          <Text style={styles.stateTitle}>0 Completed Orders</Text>
           <Text style={styles.stateSubtitle}>
-            There are currently no Ready-To-Ship orders at this campus
+            There are currently 0 Completed Orders at this campus
           </Text>
         </View>
       ) : (
-        vendorsWithreadyToShipOrders.map(vendor => (
+        vendorsWithCompletedOrders.map(vendor => (
           <CollapsableVendor
-            key={`readytoship_${vendor.vendorId}`}
+            key={`Completed_${vendor.vendorId}`}
             vendorName={vendor.vendorName}
             vendorLogoUrl="https://example.com/logo.png"
-            status="ready to ship"
+            status="completed"
             vendorPhone={vendor.vendorPhone}>
             <OrderCardList
-              key={`readyToShip_orders_${vendor.vendorId}`}
+              key={`Completed_orders_${vendor.vendorId}`}
               vendorId={vendor.vendorId}
-              status="READY_TO_SHIP"
+              status="COMPLETED"
             />
           </CollapsableVendor>
         ))
@@ -64,7 +65,7 @@ const ReadyToShipTab: React.FC<ReadyToShipTabProps> = ({vendors}) => {
   );
 };
 
-export default ReadyToShipTab;
+export default CompletedTab;
 
 const styles = StyleSheet.create({
   stateContainer: {

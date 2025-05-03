@@ -1,20 +1,33 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Linking,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type OrderCardProps = {
   vendorName: string;
   vendorLogoUrl: string;
-  status: 'pending' | 'processing' | 'ready' | string;
-  onCallPress?: () => void;
+  status:
+    | 'pending'
+    | 'cancelled'
+    | 'readytoship'
+    | 'completed'
+    | 'cancelled'
+    | 'accepted';
   children?: React.ReactNode;
+  vendorPhone: string;
 };
 
 const CollapsableVendor: React.FC<OrderCardProps> = ({
   vendorName,
   vendorLogoUrl,
   status,
-  onCallPress,
+  vendorPhone,
   children,
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -22,23 +35,22 @@ const CollapsableVendor: React.FC<OrderCardProps> = ({
   const handleToggleExpand = () => {
     setExpanded(prev => !prev);
   };
-
+  const handleCallCustomer = () => {
+    const phoneNumber = `tel:${vendorPhone}`;
+    Linking.openURL(phoneNumber);
+  };
   return (
     <View style={styles.card}>
-      {/* Top row */}
       <TouchableOpacity style={styles.header} onPress={handleToggleExpand}>
         <View style={styles.vendorInfo}>
-          {/* Vendor Logo */}
           <Image
             source={{uri: vendorLogoUrl}}
             style={styles.vendorLogo}
             resizeMode="contain"
           />
 
-          {/* Vendor Name */}
           <Text style={styles.vendorName}>{vendorName}</Text>
 
-          {/* Status dot */}
           <View
             style={[
               styles.statusDot,
@@ -47,19 +59,18 @@ const CollapsableVendor: React.FC<OrderCardProps> = ({
           />
         </View>
 
-        {/* Call button and expand icon */}
         <View style={styles.actions}>
-          {onCallPress && (
-            <TouchableOpacity style={styles.callButton} onPress={onCallPress}>
-              <Icon
-                name="phone"
-                size={16}
-                color="#fff"
-                style={{marginRight: 4}}
-              />
-              <Text style={styles.callButtonText}>Call </Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.callButton}
+            onPress={handleCallCustomer}>
+            <Icon
+              name="phone"
+              size={16}
+              color="#fff"
+              style={{marginRight: 4}}
+            />
+            <Text style={styles.callButtonText}>Call </Text>
+          </TouchableOpacity>
 
           <Icon
             name={expanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
@@ -79,9 +90,13 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case 'pending':
       return 'red';
-    case 'processing':
-      return 'yellow';
-    case 'ready':
+    case 'accepted':
+      return 'orange';
+    case 'readytoship':
+      return 'orange';
+    case 'cancelled':
+      return 'red';
+    case 'completed':
       return 'green';
     default:
       return 'gray';
