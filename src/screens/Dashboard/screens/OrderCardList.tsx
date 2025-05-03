@@ -10,13 +10,27 @@ interface OrderCardListProps {
 
 const OrderCardList: React.FC<OrderCardListProps> = ({vendorId, status}) => {
   const {getVendorOrdersByStatus} = useOrderStore();
-  console.log('Vendor ID:', vendorId);
-  console.log('Status:', status);
-  const pendingOrders = getVendorOrdersByStatus(Number(vendorId), status);
-  console.log('Pending Orders:', pendingOrders);
+
+  const getOrders = () => {
+    if (status === 'CANCELLED') {
+      const cancelledOrders = getVendorOrdersByStatus(
+        Number(vendorId),
+        'CANCELLED',
+      );
+      const rejectedOrders = getVendorOrdersByStatus(
+        Number(vendorId),
+        'REJECTED',
+      );
+      return [...cancelledOrders, ...rejectedOrders];
+    }
+    return getVendorOrdersByStatus(Number(vendorId), status);
+  };
+
+  const orders = getOrders();
+
   return (
     <View style={styles.container}>
-      {pendingOrders.map(order => (
+      {orders.map(order => (
         <OrderSummaryCard key={`${status}_${order.orderId}`} {...order} />
       ))}
     </View>

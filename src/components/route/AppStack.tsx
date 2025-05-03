@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CampusSelector from '../common/addressHeader';
 import OrderListScreen from '../Dashboard/OrderDashboard';
 
 import OrderStackNavigator from '../../navigation/DashboardNavigation';
+import {useCampuses} from '../../hooks/campuses/useCampuses';
 
 const AppStack = () => {
   const handleCampusSelect = (campus: any) => {
