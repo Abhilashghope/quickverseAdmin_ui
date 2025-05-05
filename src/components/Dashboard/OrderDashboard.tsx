@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  Alert,
 } from 'react-native';
 import {useOrderStore} from '../../store/orders/useOrdersStore';
 import DashboardTile from './dashboardTile/DashboardTile';
@@ -16,6 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {OrderStackParamList} from '../../navigation/DashboardNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useCampuses} from '../../hooks/campuses/useCampuses';
+import {useAuth} from '../../contexts/Login/AuthProvider';
 
 type OrderListScreenNavigationProp = StackNavigationProp<
   OrderStackParamList,
@@ -43,7 +45,25 @@ const OrderListScreen = () => {
     fetchOrders();
   };
   const {selectedCampus} = useCampuses();
-
+  const auth = useAuth();
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: () => auth.signOut(),
+        },
+      ],
+      {cancelable: false},
+    );
+  };
   if (loading) {
     return (
       <View style={[styles.centered, {flex: 1}]}>
@@ -150,6 +170,9 @@ const OrderListScreen = () => {
             color="#A3D8F0"
           />
         </View>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
       </ScrollView>
     </>
   );
@@ -204,6 +227,19 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  signOutButton: {
+    backgroundColor: '#ff4444',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 20,
+    marginHorizontal: 10,
+  },
+  signOutButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

@@ -4,7 +4,7 @@ import {Campus} from '../../../store/campuses/useCampusesStore';
 import {isValidCampus} from '../../../utils/global/campusValidator';
 
 // Initialize MMKV
-const storage = new MMKV();
+export const storage = new MMKV();
 
 // Define storage keys
 const StorageKeys = {
