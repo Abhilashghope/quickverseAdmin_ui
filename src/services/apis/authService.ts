@@ -13,53 +13,45 @@ export type AuthData = {
 };
 const sendOtp = async (phoneNumber: string): Promise<any> => {
   //*********************mock****************
-  // return new Promise(resolve => {
-  //   setTimeout(() => {
-  //     resolve({
-  //       session: {
-  //         token: JWTTokenMock,
-  //         phoneNumber: phoneNumber,
-  //         name: 'Lucas Garcez',
-  //         //campus: 'IIM Udaipur',
-  //         email: 'mithiladongre@gmail.com',
-  //       },
-  //     });
-  //   }, 1000);
-  // });
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve({});
+    }, 1000);
+  });
 
-  return axios
-    .post(
-      `${globalConfig.apiBaseUrl}/v1/requestOtp`,
-      {
-        mobile: phoneNumber,
-      },
-      {
-        headers: {
-          Authorization: 'token',
-        },
-      },
-    )
-    .then(response => {
-      return response.data?.response?.verificationId;
-    })
-    .catch(error => {
-      if (error?.response) {
-        // The request was made and the server responded with a status code
-        console.log(
-          'Server responded with non-2xx status:',
-          error.response.status,
-        );
-        console.log('Response data:', error.response.data);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.log('No response received:', error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error setting up the request:', error.message);
-      }
-      // Throw the error again to propagate it to the caller
-      throw error;
-    });
+  // return axios
+  //   .post(
+  //     `${globalConfig.apiBaseUrl}/v1/requestOtp`,
+  //     {
+  //       mobile: phoneNumber,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: 'token',
+  //       },
+  //     },
+  //   )
+  //   .then(response => {
+  //     return response.data?.response?.verificationId;
+  //   })
+  //   .catch(error => {
+  //     if (error?.response) {
+  //       // The request was made and the server responded with a status code
+  //       console.log(
+  //         'Server responded with non-2xx status:',
+  //         error.response.status,
+  //       );
+  //       console.log('Response data:', error.response.data);
+  //     } else if (error.request) {
+  //       // The request was made but no response was received
+  //       console.log('No response received:', error.request);
+  //     } else {
+  //       // Something happened in setting up the request that triggered an Error
+  //       console.log('Error setting up the request:', error.message);
+  //     }
+  //     // Throw the error again to propagate it to the caller
+  //     throw error;
+  //   });
 };
 const verifyOtp = async (
   phoneNumber: string,
