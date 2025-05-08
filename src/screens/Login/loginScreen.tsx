@@ -1,125 +1,3 @@
-// import React, {useState} from 'react';
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Alert,
-// } from 'react-native';
-// import {storage} from '../../services/storage/MMKV/storage.service';
-// import {useAuth} from '../../contexts/Login/AuthProvider';
-
-// const LoginScreen: React.FC = () => {
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const auth = useAuth();
-//   const handleLogin = async () => {
-//     console.log('Login button pressed');
-//     setLoading(true);
-//     await auth
-//       .verifyOtp('9765008110', '1234', 'aassd')
-//       .then(() => console.log('succcess'))
-//       .catch(err => {
-//         console.log('Error:', err);
-//       })
-//       .finally(() => {
-//         console.log('finally');
-//         setLoading(false);
-//       });
-//     storage.set('@AuthData', JSON.stringify({email, password}));
-//     Alert.alert('Login Info', `Email: ${email}\nPassword: ${password}`);
-//     // Add login logic here
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Login</Text>
-//       <View style={styles.form}>
-//         <View style={styles.inputGroup}>
-//           <Text style={styles.label}>Email:</Text>
-//           <TextInput
-//             style={styles.input}
-//             value={email}
-//             onChangeText={setEmail}
-//             placeholder="Enter your email"
-//             keyboardType="email-address"
-//             autoCapitalize="none"
-//             autoCorrect={false}
-//           />
-//         </View>
-//         <View style={styles.inputGroup}>
-//           <Text style={styles.label}>Password:</Text>
-//           <TextInput
-//             style={styles.input}
-//             value={password}
-//             onChangeText={setPassword}
-//             placeholder="Enter your password"
-//             secureTextEntry
-//           />
-//         </View>
-//         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-//           <Text style={styles.buttonText}>Login</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: '#f5f5f5',
-//   },
-//   title: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     marginBottom: 20,
-//   },
-//   form: {
-//     width: '80%',
-//     padding: 20,
-//     borderRadius: 8,
-//     backgroundColor: '#fff',
-//     elevation: 3,
-//     shadowColor: '#000',
-//     shadowOffset: {width: 0, height: 2},
-//     shadowOpacity: 0.2,
-//     shadowRadius: 4,
-//   },
-//   inputGroup: {
-//     marginBottom: 15,
-//   },
-//   label: {
-//     fontSize: 16,
-//     marginBottom: 5,
-//   },
-//   input: {
-//     height: 40,
-//     borderColor: '#ccc',
-//     borderWidth: 1,
-//     borderRadius: 4,
-//     paddingHorizontal: 10,
-//     backgroundColor: '#fff',
-//   },
-//   button: {
-//     marginTop: 10,
-//     paddingVertical: 10,
-//     backgroundColor: '#007BFF',
-//     borderRadius: 4,
-//     alignItems: 'center',
-//   },
-//   buttonText: {
-//     color: '#fff',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-// });
-
-// export default LoginScreen;
 import React, {useState} from 'react';
 import {
   View,
@@ -129,23 +7,43 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Dimensions,
+  ImageBackground,
+  Image,
 } from 'react-native';
-import {storage} from '../../services/storage/MMKV/storage.service';
-import {useAuth} from '../../contexts/Login/AuthProvider';
 
+import {useAuth} from '../../contexts/Login/AuthProvider';
+import CountryPicker, {
+  Country,
+  CountryCode,
+} from 'react-native-country-picker-modal';
+import {LoginStackParamList} from '../../navigation/LoginNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {useNavigation} from '@react-navigation/native';
+
+const {height} = Dimensions.get('window');
+type LoginScreenNavigationProp = StackNavigationProp<
+  LoginStackParamList,
+  'LoginScreen'
+>;
 const LoginScreen: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const [countryCode, setCountryCode] = useState<CountryCode>('IN');
+  const [callingCode, setCallingCode] = useState('91');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const onSelect = (country: Country) => {
+    setCountryCode(country.cca2);
+    setCallingCode(country.callingCode[0]);
+  };
   const auth = useAuth();
   const handleLogin = async () => {
     console.log('Login button pressed');
     setLoading(true);
     try {
-      await auth.verifyOtp('9765008110', '1234', 'aassd');
+      await auth.sendOtp(phoneNumber);
       console.log('success');
-      storage.set('@AuthData', JSON.stringify({email, password}));
-      Alert.alert('Login Info', `Email: ${email}\nPassword: ${password}`);
     } catch (err) {
       console.log('Error:', err);
       Alert.alert('Error', 'Login failed');
@@ -153,44 +51,63 @@ const LoginScreen: React.FC = () => {
       console.log('finally');
       setLoading(false);
     }
-    Alert.alert('Login Info', `Email: ${email}\nPassword: ${password}`);
+
+    navigation.navigate({
+      name: 'OTPScreen',
+      params: {phoneNumber, verificationId: 'abc'},
+    });
     // Add login logic here
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email:</Text>
+      <ImageBackground
+        source={require('../../assets/images/bg_1.png')}
+        style={styles.topBackground}
+        resizeMode="cover"
+      />
+      <View style={styles.logoContainer}>
+        <Image
+          style={styles.topLogo}
+          source={require('../../assets/images/logo_qv.png')}
+        />
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.title}>Login</Text>
+        <Text style={styles.subtitle}>Log In to your Quickverse account</Text>
+
+        <Text style={{color: '#9CA3AF', marginTop: 36}}>Phone number</Text>
+        <View style={styles.phoneInputWrapper}>
+          <CountryPicker
+            withCallingCode
+            withFilter
+            countryCode={countryCode}
+            withFlag
+            withEmoji
+            onSelect={onSelect}
+            containerButtonStyle={styles.countryPicker}
+          />
+          <Text style={styles.callingCode}>+{callingCode}</Text>
           <TextInput
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            placeholder="Enter phone number"
+            keyboardType="number-pad"
+            maxLength={10}
             style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
+            placeholderTextColor="#9CA3AF"
           />
         </View>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password:</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            secureTextEntry
-          />
-        </View>
+
         <TouchableOpacity
-          style={styles.button}
+          style={styles.otpButton}
           onPress={handleLogin}
           disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.otpText}>Login</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -201,55 +118,103 @@ const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#111827',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  },
+  topBackground: {
+    height: height * 0.6,
+    width: '100%',
+    position: 'absolute',
+    top: -80,
+  },
+  logoContainer: {
+    position: 'absolute',
+    top: 70,
+    alignItems: 'center',
+    width: '100%',
+  },
+  topLogo: {
+    width: 90,
+    resizeMode: 'contain',
+  },
+  card: {
+    width: '90%',
+    height: '50%',
+    marginTop: 150,
+    backgroundColor: '#1F2937',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'yellow',
+    shadowColor: '#FAE588',
+    shadowOffset: {width: 0, height: 5},
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
+    color: '#F3F4F6',
     fontWeight: 'bold',
-    marginBottom: 20,
+    textAlign: 'center',
   },
-  form: {
-    width: '80%',
-    padding: 20,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    elevation: 3,
+  subtitle: {
+    textAlign: 'center',
+    color: '#9CA3AF',
+    marginTop: 5,
+    marginBottom: 16,
+  },
+  skipContainer: {
+    position: 'absolute',
+    top: 8,
+    right: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: '#4B5563',
+    marginRight: 16,
+    marginTop: 16,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
-  inputGroup: {
-    marginBottom: 15,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  input: {
-    height: 40,
+  phoneInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1F2937',
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
+    marginTop: 5,
+    marginBottom: '15%',
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    height: 55,
   },
-  button: {
-    marginTop: 10,
-    paddingVertical: 10,
-    backgroundColor: '#007BFF',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 40,
+  countryPicker: {
+    marginRight: 8,
   },
-  buttonText: {
-    color: '#fff',
+  callingCode: {
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    marginRight: 6,
+  },
+  input: {
+    flex: 1,
+    color: 'white',
+    fontSize: 16,
+  },
+  otpButton: {
+    backgroundColor: '#FFE885',
+    borderRadius: 8,
+    paddingVertical: 14,
+    marginTop: 'auto',
+  },
+  otpText: {
+    fontSize: 16,
+    color: 'black',
+    textAlign: 'center',
   },
 });
-
 export default LoginScreen;
